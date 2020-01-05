@@ -1,0 +1,75 @@
+任务二：网络搭建
+B：
+
+1，问题：数据在网络中的维度顺序是什么？
+答案：inputs.size(),batch_size:批的个数，c:每个样本输出的通道数，w：宽度，h：高
+2:nn.Conv2d()中参数含义与顺序？
+
+答案：in_channels:输入通道个数；out_channels:输出通道个数；kernel_size:核大小；stride步长；padding边界填充；padding_mode:填充模式；dilation:核元素间距；groups:输入到输出阻塞连接数；bias:偏差
+3:nn.Linear()是什么意思？参数含义与顺序？
+答案：in_features:输入样本特征数；out_features:输出样本特征数,bias:偏差
+4:nn.PReLU()与nn.ReLU()的区别？示例中定义了很多nn.PReLU()，能否只定义一个PReLU？
+答案：relu对负值取0，prelu对于负值添加学习参数；由于添加了学习参数，所以网络不能只定义一个prelu
+5:nn.AvgPool2d()中参数含义？还有什么常用的pooling方式？
+答案：kernel_size:卷积核大小；stride:步长；padding:边界填充；ceil_mode:数据取整模式；count_include_pad:若为真，padding也在均值计算中；divisor_override:如果指定，被作为除数；
+平均池化:nn.AvgPool1d,nn.AvgPool3d，最大池化:nn.MaxPool1d,MaxPool2d,MaxPool3d，
+自适应平均池化:nn.AdaptiveAvgPool1d,nn.AdaptiveAvgPool2d,nn.AdaptiveAvgPool3d，
+自适应最大池化:nn.AdaptiveMaxPool1d,nn.AdaptiveMaxPool2d,nn.AdaptiveMaxPool3d，
+LP池化:nn.LPPool1d,nn.LPPool2d，
+上池化:nn.MaxUnpool1d,nn.MaxUnpool2d,nn.MaxUnpool3d
+6:view()的作用？
+答案：改变tensor的size形状
+
+训练网络的框架：
+B.第二部分
+1.如何设置GPU？
+答案：先判断是否有GPU，再用torch.device指定要使用的cuda
+use_cuda = not args.no_cuda and torch.cuda.is_available()
+device = torch.device('cuda' if use_cuda else 'cpu')
+2. 如何将数据/网络传入CPU/GPU？
+答案：data.to(device)
+3. 如何读取数据？
+答案：先用自定义的FaceLandmarksDataset类加载所有数据，然后再用torch.utils.data.DataLoader把数据导入用于计算，其中参数shuffle为真表示随机取样本
+
+C. 第三部分
+1. 如何设置loss？
+答案：critierion = nn.MSELoss()，表示使用均方误差的损失函数
+2.配合后续周学习，loss都有哪些。分别有什么作用(常用的即可)？
+答案：loss：
+nn.MSELoss():计算真实值与预测值的均方误差，用于预测回归，nn.L1Loss:绝对值误差
+nn.CrossEntropyLoss():用于多分类；nn.NLLLoss():log 似然损失函数，用于多分类，需要结合nn.LogSoftmax()来使用，等同于CrossEntropyLoss；
+nn.BCELoss():二元交叉熵分类，需要先用nn.Sigmoid先做计算后在使用，nn.BCEWithLogitsLoss():等同于nn.BCELoss和nn.Sigmoid
+SVM：支持向量机，二分类，也可用于多分类
+nn.MultiLabelMarginLoss():多类别分类
+nn.SmoothL1Loss():用于预测回归，比nn.MSELoss容易防止梯度爆炸
+3.如何设置优化器？
+答案：优化器:
+torch.optim.Adagrad:params:需要训练的参数，lr:学习率，lr_decay:学习率衰减，weight_decay:权重衰减
+torch.optim.Adam:params:需要训练的参数，lr:学习率，betas:计算梯度以及梯度平方的运行平均值的系数，weight_decay:权重衰减
+torch.optim.RMSprop:params:需要训练的参数，lr:学习率，momentum:动量，weight_decay:权重衰减，alpha:平滑因子
+torch.optim.SGD:params:需要训练的参数，lr:学习率，momentum:动量，weight_decay:权重衰减，nesterov:是否启用nesterov动量，dampening:动量阻尼系数
+torch.optim.lr_scheduler.StepLR:optimizer:优化器，step_size:学习率衰减步长，gamma:学习率衰减因子
+
+4.配合第8周内容，常用的优化器有哪些？
+SGD,SGD+Momentum,Nesterov,Adagrad,RMSProp,Adam,AdaMax
+
+
+Train部分:
+2. optimizer.zero()与optimizer.step()的作用是什么？
+答案:optimizer.zero()表示这是模型参数的梯度为0，optimizer.step()表示开始执行迭代模型参数
+3. model.eval()产生的效果？
+答案:模型进入评估状态，此时模型参数不会改变
+4. model.state_dict()的目的是？
+答案:取模型的参数
+5. 何时系统自动进行bp？
+答案:loss.backward()
+6. 如果自己的层需要bp，如何实现？如何调用？
+答案:定义loss，并调用loss.backward()
+
+
+Test、Predict与Finetune部分：
+B. Finetune时，有时还要固定某些层不参与训练，请回答如何freeze某些层
+答案:对需要freeze层的参数添加requires_grad为FALSE
+
+
+

@@ -1,0 +1,50 @@
+1.data_preprocess.py(样本初始化)
+(1),原始人脸图片框扩展0.15倍
+(2),对超过图像边框进行截取
+(3),关键点超过图像的样本被删除
+(4),分别生成的正负样本比例为7:3
+生成的文件为train.txt val.txt
+
+操作:
+python data_preprocess.py
+
+
+2.data_preprocess_pos_neg.py(生成关于人脸的正负样本)
+(1),给出两个rect的iou计算函数
+(2),根据原始样本(正样本train.txt,val.txt)获取任意比例(1:1)的负样本,项目中负样本跟症状人脸样本的iou小于0.3
+(3),把正负样本打乱放入新的文件
+最后的文件为train3.txt val3.txt
+
+操作:
+python data_preprocess_pos_neg.py
+
+
+3.data_myself.py
+(1),主要定义获取人脸数据类
+(2),增加了各类数据操作,图像旋转(可以按照原始样本进行一定概率的旋转)
+(3),图像投影变换等(可以按照原始样本进行一定概率的投影变换)
+
+
+4.detector_myself.py
+(1),定义了几种模型(项目提到的模型,resnet18,resnet101)
+(2),最终训练结果
+人脸训练loss函数为:nn.CrossEntropyLoss()
+人脸landmarks训练loss函数为:nn.MSELoss()
+
+train landmarks loss(final):1.756
+val landmarks loss(final):7.62
+
+train acc(total pos neg)(final):1.00 1.00 1.00
+val acc(total pos neg)(final):0.977 0.960 0.994
+
+以上采用resnet101训练得到,lr(0.001)100次epoch,加上lr(0.00001)50次epoch(微调)
+
+操作:
+python -u detector_myself101.py --phase train(训练)
+python -u detector_myself.py --phase finetune(微调)
+
+操作:
+python detector_myself.py --phase predict --sample-id 0(预测)
+python loss_and_accuracy.py(展示loss和accuracy)
+
+

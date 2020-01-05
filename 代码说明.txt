@@ -1,0 +1,182 @@
+1.data_preprocess.py
+(1)def expand_rect(x, y, w, h, image_w, image_h, expand_rate)::
+计算图像中人脸框扩展后，人脸框的坐标
+如果扩展后的框超过图像，会进行crop处理
+
+(2)def generate_data(path,datas_path, train_path, val_path, expand_rate=0.0, train_val_rate=0.7:
+对于label文件，生成训练和测试数据(7:3) 可以生成任意比例
+其中有些关键点坐标超过了原始图片，将会被删除
+
+
+
+2.data_preprocess_pos_neg.py
+(1)def show_face_landmarks3(path, img, rect, rect2=None, kpt=None):
+显示人脸和landmarks
+
+(2)def compute_iou(rect1, rect2):
+计算两个rect的iou
+
+(3)def rect_lessthan_iou(rect, rate=1.0):
+给定rect,计算出iou小于rate的新的rect,并返回
+
+(4)def generate_sample_neg(path, sample_txt, data_path, iou_rate, sample_num):
+给定样本数据,计算出sample_num个iou小于iou_rate的负样本
+
+(5)def rect_iou0(rect):
+随机生成与原始rect的iou等于0的新的rect
+
+(6)def generate_data2(path, data_path, filename, sample_txt, iou_rate, pos_neg_rate=0.7, iou0_proportion=0.01):
+根据原来的正样本生成正负样本比例为pos_neg_rate的负样本,其中在负样本中iou为0的占比为iou0_proportion
+最后返回原始的正样本和生成的负样本的乱序总样本
+
+(7)def show_image(path, filename, id):
+展示图片,矩形框,landmarks
+
+
+
+3.data_myself.py
+(1)class Normalize(object):
+略
+
+(2)def channel_norm(img):
+略
+
+(3)class ToTensor(object):
+把数据转化为tensor,通道为3
+
+(4)class ToTensor1(object):
+把数据转换为tensor,通道为3
+
+(5)class ToTensor2(object):
+把数据转换为tensor,通道为3
+
+(6)class ToTensor3(object)
+把数据转换为tensor,通道为1
+
+(7)class ToRotation(object):
+旋转图片和landmarks
+
+(8)class ToRotation2(object):
+旋转图片和landmarks,可以设定旋转的概率,以及旋转的角度范围
+
+(9)class ToAffine(object):
+投影变换图片和landmarks,可以设定变换的概率,以及x,y轴坐标的角度范围,无z坐标(z坐标旋转等同于ToRotation2)
+
+(10)class ToFlip3(object):
+图片和landmarks水平方向变换
+
+(11)class ToFlip4(object):
+图片和landmarks垂直方向变换
+
+(12)class ToHeatMap(object):
+生成带有heatmap的landmarks坐标
+
+(13)class ToFlip1(object):
+带有高斯参数的水平方向变换
+
+(14)class ToFlip2(object):
+带有高斯参数的垂直方向变换
+
+(15)def get_train_test_set(path,rate=0.0,anglemin=0,anglemax=0,arate=0.0,aanglexmin=0,aanglexmax=0,aangleymin=0,aangleymax=0):
+获取训练数据和测试数据,其中带有旋转变换的概率和角度,和带有投影变换的概率和角度
+
+(16)def load_data(phase,rate=0.0,anglemin=0,anglemax=0,arate=0.0,aanglexmin=0,aanglexmax=0,aangleymin=0,aangleymax=0):
+获取数据,其中带有旋转变换的概率和角度,和带有投影变换的概率和角度
+
+(17)class FaceLandmarksDataset(Dataset):
+把图片和landmarks数据转换为totensor数据
+
+(18)class FaceLandmarksDataset_HeatMap(Dataset):
+把图片和landmarks数据转换为带有heatmap的totensor数据
+
+(19)class FaceLandmarksDataset2(Dataset):
+把图片和landmarks数据转换为totensor数据(其中包括是否为人脸的数据)
+
+(20)class FaceLandmarksDataset_HeatMap2(Dataset):
+把图片和landmarks数据转换为带有heatmap的totensor数据(其中包括是否为人脸的数据)
+
+(21)def CenterGaussianHeatMap(img_height, img_width, c_x, c_y, variance):
+计算高斯核
+
+(22)def show_heatmap_landmarks(img, landmarks, landmarks_heatmap, hheight, hweight, sigma):
+展示带有heatmap的landmarks数据
+
+(23)def heatmap_landmarks(height, weight, landmarks, hheight, hweight, sigma):
+根据landmarks,高斯核的高宽和gamma参数,计算heatmap的landmarks
+
+(24)def HeatMap(height, weight, sigma):
+计算Heatmap
+
+(25)def img_landmarks(img, landmarks, face):
+展示带有landmarks的图
+
+(26)def show_rotation(sample, angle=0):
+展示旋转后的图(测试用的)
+
+
+
+4.detector_myself.py
+(1)class Flatten(nn.Module):
+把二维拉成一维
+
+(2)class Linear2Conv(nn.Module):
+把一维变成二维
+
+(3)class Net(nn.Module):
+项目阶段3中提供的网络
+
+(4)class Net2(nn.Module):
+后面采用反卷积网络,使得最后的输出为batch_size x c x h x w(c=21,其余跟inputs一致)
+
+
+
+(5)def train(args, model, optimer, critierion_face, critierion_landmarks, train_loader, val_loader, device, heatmap=False):
+训练函数,其中保存的数据有:
+训练集损失值,人脸训练集损失值,landmarks训练集损失值
+训练集损失值,人脸训练集损失值,landmarks训练集损失值(每个batch_size)
+测试集损失值,人脸测试集损失值,landmarks测试集损失值
+测试集损失值,人脸测试集损失值,landmarks测试集损失值(每个batch_size)
+
+训练集正确率,训练集正样本正确率,训练集负样本正确率
+训练集正确率,训练集正样本正确率,训练集负样本正确率(每个batch_size)
+测试集正确率,测试集正样本正确率,测试集负样本正确率
+测试集正确率,测试集正样本正确率,测试集负样本正确率(每个batch_size)
+以上数据保存在csv目录下
+训练结束后的模型.pt,保存在trained_model目录下
+
+
+基于heatmap的训练集的损失值,和测试集的损失值
+最后还会保训练好的模型
+
+
+(6)class Net_Res(nn.Module):
+用resnet101创建模型
+
+(7)def predict(model, sample):
+输入模型和单个样本,预测是否为人脸和landmarks,并在图上展示
+
+(7)def main():
+parser.add_argument() 添加各类参数
+
+args.phase=train:表示训练
+args.phase=finetune:表示微调
+args.phase=predict:表示预测
+操作:
+python detector_myself.py --phase predict --sample-id 0
+python loss_and_accuracy.py
+
+
+
+5.loss_and_accuracy.py
+(1),def show_fig(loss_filename,Loss_list,items,label='loss'):
+展示某个文件里面的loss和accuracy
+
+(2),def show_list(loss_filename,path):
+提取指定目录下的所有loss_accuracy文件
+
+
+
+
+
+
+
